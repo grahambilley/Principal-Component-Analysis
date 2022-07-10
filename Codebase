@@ -1,0 +1,71 @@
+# Load Data
+data = pd.read_csv('food-consumption.csv')
+data.head()
+
+# Clean the data
+data = data.dropna().reset_index(drop=True)
+
+'''
+The data found in 'food-consumption.csv' contains 16 Eurpoean 
+countries and their consumption of the following food items:
+
+1. Real coffee
+2. Instant coffee
+3. Tea
+4. Sweetener
+5. Biscuits
+6. Powder soup
+7. Tin soup
+8. Potatoes
+9. Frozen fish
+10. Frozen vegetables
+11. Apples
+12. Oranges
+13. Tinned fruit
+14. Jam
+15. Garlic
+16. Butter
+17. Margerine
+18. Olive oil
+19. Yogurt
+20. Crisp bread
+'''
+
+# Extract attributes from raw data
+Anew = data.iloc[:,1:]
+m,n = Anew.shape
+foods = data.columns.values
+
+# Create indicator matrix
+countries = data.iloc[:,0]
+
+# Normalize data
+Anew = Anew/Anew.std(axis=0)
+Anew = Anew.T
+
+# # PCA
+mu_std = np.mean(Anew,axis = 1)
+xc = Anew - mu_std[:,None]
+
+C = np.dot(xc,xc.T)/m
+
+K = 2
+S,W = ll.eigs(C,k = K)
+
+dim1 = np.dot(W[:,0].T,xc)/np.sqrt(S[0])
+dim2 = np.dot(W[:,1].T,xc)/np.sqrt(S[1])
+dim1 = dim1.real # X-values
+dim2 = dim2.real # Y-values
+
+# 3)
+plt.figure(figsize=(10, 10))
+plt.axis([-0.5,0.5,-0.5,0.5])
+plt.scatter(W[:,0], W[:,1], c=np.random.rand(n))
+plt.title('Top 2 Principal Components of the Dataset')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+for i in range(n):
+    plt.annotate(foods[i+1], (W[i,0], W[i,1]))
+
+plt.savefig('Composition of Top 2 Principal Components.png', dpi=80)
+plt.show()
